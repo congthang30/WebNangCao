@@ -1,0 +1,80 @@
+@page "{id:int}"
+@model NewWeb.Areas.Admin.Pages.Users.EditUserModel
+@{
+    ViewData["Title"] = "Chỉnh sửa người dùng";
+}
+
+<div class="container-fluid">
+    <h1 class="mb-4">Chỉnh sửa người dùng</h1>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger">@Model.ErrorMessage</div>
+    }
+
+    <form method="post" class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label">Họ tên (để trống nếu không thay đổi)</label>
+                        <input asp-for="Name" class="form-control" value="@Model.User.FullName" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label">Email (để trống nếu không thay đổi)</label>
+                        <input asp-for="Email" type="email" class="form-control" value="@Model.User.Email" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="Phone" class="form-label">Số điện thoại (để trống nếu không thay đổi)</label>
+                        <input asp-for="Phone" class="form-control" value="@Model.User.Phone" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label">Mật khẩu mới (để trống nếu không thay đổi)</label>
+                        <input asp-for="Password" type="password" class="form-control" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="Role" class="form-label">Vai trò (để trống nếu không thay đổi)</label>
+                        <select asp-for="Role" class="form-select">
+                            <option value="">-- Không thay đổi --</option>
+                            <option value="Customer">Customer</option>
+                            <option value="Admin">Admin</option>
+                            <option value="NVKD">NVKD</option>
+                            <option value="NVKho">NVKho</option>
+                            <option value="NVMKT">NVMKT</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="AccountStatus" class="form-label">Trạng thái (để trống nếu không thay đổi)</label>
+                        <select asp-for="AccountStatus" class="form-select">
+                            <option value="">-- Không thay đổi --</option>
+                            <option value="Active">Active</option>
+                            <option value="Locked">Locked</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Cập nhật</button>
+                <a asp-page="ListUsers" class="btn btn-secondary">Hủy</a>
+            </div>
+        </div>
+    </form>
+</div>
+

@@ -1,0 +1,240 @@
+/* ============= CHECKOUT PAGE CSS ============= */
+
+.checkout-container {
+    padding: 2rem 0;
+    min-height: calc(100vh - 400px);
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 2rem;
+}
+
+.checkout-section {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.section-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+/* Cart Items Summary */
+.cart-items-summary {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.cart-item-summary {
+    padding: 1rem;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.cart-item-summary:hover {
+    border-color: #00b4d8;
+    box-shadow: 0 2px 8px rgba(0, 180, 216, 0.1);
+}
+
+.item-image {
+    width: 100%;
+    max-width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.item-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.25rem;
+}
+
+.item-price {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #00b4d8;
+}
+
+/* Address Options */
+.address-option {
+    padding: 1rem;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.address-option:hover {
+    border-color: #00b4d8;
+    background: #f8f9fa;
+}
+
+.address-option .form-check-input:checked ~ .form-check-label {
+    color: #00b4d8;
+}
+
+.address-option .form-check-input:checked {
+    background-color: #00b4d8;
+    border-color: #00b4d8;
+}
+
+.address-info strong {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+/* Payment Options */
+.payment-option {
+    padding: 1rem;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.payment-option:hover {
+    border-color: #00b4d8;
+    background: #f8f9fa;
+}
+
+.payment-option .form-check-input:checked ~ .form-check-label {
+    color: #00b4d8;
+}
+
+.payment-option .form-check-input:checked {
+    background-color: #00b4d8;
+    border-color: #00b4d8;
+}
+
+.payment-info strong {
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+/* Order Summary Card */
+.order-summary-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    position: sticky;
+    top: 100px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    font-size: 1rem;
+}
+
+.summary-row span:first-child {
+    color: #6c757d;
+}
+
+.summary-row span:last-child {
+    font-weight: 600;
+    color: #333;
+}
+
+.summary-total {
+    padding-top: 1rem;
+    border-top: 2px solid #e9ecef;
+    margin-top: 0.5rem;
+}
+
+.summary-total span {
+    font-size: 1.3rem;
+}
+
+.total-price {
+    color: #00b4d8 !important;
+    font-weight: 700 !important;
+    font-size: 1.5rem !important;
+}
+
+.security-info {
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.security-info small {
+    color: #6c757d;
+}
+
+/* Verify OTP */
+.verify-otp-container {
+    padding: 3rem 0;
+    min-height: calc(100vh - 400px);
+}
+
+.verify-card {
+    background: white;
+    border-radius: 16px;
+    padding: 3rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.verify-icon {
+    font-size: 4rem;
+    color: #00b4d8;
+    margin-bottom: 1rem;
+}
+
+.verify-card h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.verify-card .form-control-lg {
+    font-size: 1.5rem;
+    letter-spacing: 0.5rem;
+    font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+    .order-summary-card {
+        position: static;
+        margin-top: 2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .checkout-container {
+        padding: 1rem 0;
+    }
+
+    .checkout-section {
+        padding: 1rem;
+    }
+
+    .verify-card {
+        padding: 2rem 1.5rem;
+    }
+
+    .verify-icon {
+        font-size: 3rem;
+    }
+}
+

@@ -1,0 +1,67 @@
+@page
+@model NewWeb.Areas.Admin.Pages.Users.ListUsersModel
+@{
+    ViewData["Title"] = "Danh sách người dùng";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Danh sách người dùng</h1>
+        <a asp-page="CreateUser" class="btn btn-primary">Thêm người dùng mới</a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Họ tên</th>
+                        <th>Email</th>
+                        <th>Số điện thoại</th>
+                        <th>Vai trò</th>
+                        <th>Trạng thái</th>
+                        <th>Ngày tạo</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model.Users)
+                    {
+                        <tr>
+                            <td>@user.UserId</td>
+                            <td>@user.FullName</td>
+                            <td>@user.Email</td>
+                            <td>@user.Phone</td>
+                            <td>
+                                <span class="badge bg-info">@user.Role</span>
+                            </td>
+                            <td>
+                                <span class="badge @(user.AccountStatus == "Active" ? "bg-success" : "bg-danger")">
+                                    @user.AccountStatus
+                                </span>
+                            </td>
+                            <td>@user.CreatedAt?.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <a asp-page="EditUser" asp-route-id="@user.UserId" class="btn btn-sm btn-warning">Sửa</a>
+                                <form method="post" asp-page="EditUser" asp-page-handler="Delete" asp-route-id="@user.UserId" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa người dùng này?');">
+                                    <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+

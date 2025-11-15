@@ -1,0 +1,210 @@
+@page
+@model NewWeb.Areas.NVKD.Pages.Orders.ListOrderNewModel
+@{
+    ViewData["Title"] = "Danh sách đơn hàng chờ xác nhận";
+    Layout = "~/Areas/NVKD/Pages/Shared/_NVKDLayout.cshtml";
+}
+
+<style>
+    .page-title-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .page-title {
+        color: #1e3a8a;
+        font-weight: 600;
+        font-size: 1.75rem;
+        margin: 0;
+    }
+
+    .btn-view-invoices {
+        background-color: #93c5fd;
+        color: #1e3a8a;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-view-invoices:hover {
+        background-color: #60a5fa;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(147, 197, 253, 0.4);
+    }
+
+    .order-table {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .order-table table {
+        margin: 0;
+    }
+
+    .order-table thead {
+        background-color: #f8f9fa;
+    }
+
+    .order-table thead th {
+        font-weight: 600;
+        color: #495057;
+        padding: 1rem;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .order-table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .order-table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .btn-create-invoice {
+        background-color: #22c55e;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-create-invoice:hover {
+        background-color: #16a34a;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
+    }
+
+    .status-badge {
+        padding: 0.375rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .status-pending {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+
+    .payment-status {
+        color: #dc2626;
+        font-weight: 500;
+    }
+</style>
+
+<div class="page-title-section">
+    <h1 class="page-title">Danh sách đơn hàng chờ xác nhận</h1>
+    <a asp-area="NVKD" asp-page="/Invoices/ListInvoice" class="btn-view-invoices">
+        <i class="bi bi-file-earmark-text"></i>
+        Xem danh sách hóa đơn
+    </a>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<div class="order-table">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Mã đơn</th>
+                <th>Khách hàng</th>
+                <th>Ngày tạo</th>
+                <th>Địa chỉ</th>
+                <th>Thanh toán</th>
+                <th>Tổng tiền</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Orders.Any())
+            {
+                @foreach (var order in Model.Orders)
+                {
+                    <tr>
+                        <td><strong>#@order.OrderId</strong></td>
+                        <td>@order.User?.FullName</td>
+                        <td>@order.CreatedAt?.ToString("dd/MM/yyyy")</td>
+                        <td>@order.Address?.FullAddress</td>
+                        <td class="payment-status">
+                            @(order.StatusPayment == "Đã thanh toán" ? "Đã thanh toán" : "Chưa thanh toán")
+                        </td>
+                        <td><strong>@((order.TotalAmount ?? 0).ToString("N0"))₫</strong></td>
+                        <td>
+                            <span class="status-badge status-pending">@order.Status</span>
+                        </td>
+                        <td>
+                            <button type="button" class="btn-create-invoice" onclick="exportInvoice(@order.OrderId)">
+                                <i class="bi bi-file-earmark-text"></i>
+                                Lập hóa đơn
+                            </button>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-4">
+                        Không có đơn hàng chờ xác nhận
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@Html.AntiForgeryToken()
+
+@section Scripts {
+    <script>
+        function exportInvoice(orderId) {
+            if (!confirm('Bạn có chắc chắn muốn lập hóa đơn cho đơn hàng #' + orderId + '?')) {
+                return;
+            }
+
+            var token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+
+            fetch('?handler=ExportInvoice&orderId=' + orderId, {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': token,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi lập hóa đơn');
+            });
+        }
+    </script>
+}

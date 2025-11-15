@@ -1,0 +1,259 @@
+@page
+@model NewWeb.Pages.Checkout.IndexModel
+@{
+    ViewData["Title"] = "Thanh toán";
+}
+
+<link rel="stylesheet" href="~/css/checkout.css" asp-append-version="true" />
+
+<div class="checkout-container">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="page-title">
+                <i class="bi bi-credit-card me-2"></i>Thanh toán đơn hàng
+            </h2>
+        </div>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Info"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <i class="bi bi-info-circle me-2"></i>@TempData["Info"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (!Model.CartItems.Any())
+    {
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>Giỏ hàng của bạn đang trống.
+            <a asp-page="/Cart/Index" class="alert-link">Quay lại giỏ hàng</a>
+        </div>
+    }
+    else
+    {
+        <form method="post" id="checkoutForm">
+            <div class="row">
+                <!-- Left Column: Order Details -->
+                <div class="col-lg-8">
+                    <!-- Cart Items -->
+                    <div class="checkout-section">
+                        <h5 class="section-title">
+                            <i class="bi bi-cart3 me-2"></i>Sản phẩm trong giỏ hàng
+                        </h5>
+                        <div class="cart-items-summary">
+                            @foreach (var item in Model.CartItems)
+                            {
+                                <div class="cart-item-summary">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-2">
+                                            @if (!string.IsNullOrEmpty(item.Product?.ImagePr))
+                                            {
+                                                <img src="@item.Product.ImagePr" alt="@item.Product.ProductName" 
+                                                     class="item-image" onerror="this.src='/images/no-image.svg';">
+                                            }
+                                            else
+                                            {
+                                                <img src="/images/no-image.svg" alt="No Image" class="item-image">
+                                            }
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6 class="item-name">@item.Product?.ProductName</h6>
+                                            <small class="text-muted">Số lượng: @item.Quantity</small>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            <div class="item-price">@(((item.Quantity ?? 0) * (item.UnitPrice ?? 0)).ToString("N0")) ₫</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Address Selection -->
+                    <div class="checkout-section">
+                        <h5 class="section-title">
+                            <i class="bi bi-geo-alt me-2"></i>Địa chỉ giao hàng
+                        </h5>
+                        @if (!Model.Addresses.Any())
+                        {
+                            <div class="alert alert-warning">
+                                <i class="bi bi-exclamation-triangle me-2"></i>Bạn chưa có địa chỉ nào.
+                                <a asp-page="/Account/Addresses/Add" class="alert-link">Thêm địa chỉ mới</a>
+                            </div>
+                        }
+                        else
+                        {
+                            @foreach (var address in Model.Addresses)
+                            {
+                                <div class="form-check address-option">
+                                    <input class="form-check-input" type="radio" name="addressId" 
+                                           id="address_@address.AddressId" value="@address.AddressId" 
+                                           @(Model.Addresses.IndexOf(address) == 0 ? "checked" : "") required>
+                                    <label class="form-check-label" for="address_@address.AddressId">
+                                        <div class="address-info">
+                                            <strong>@address.Street</strong>
+                                            <div class="text-muted">
+                                                @address.Ward, @address.District, @address.City
+                                            </div>
+                                            <small class="text-muted">ĐT: @address.Phone</small>
+                                        </div>
+                                    </label>
+                                </div>
+                            }
+                            <div class="mt-2">
+                                <a asp-page="/Account/Addresses/Add" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-plus-circle me-1"></i>Thêm địa chỉ mới
+                                </a>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="checkout-section">
+                        <h5 class="section-title">
+                            <i class="bi bi-wallet2 me-2"></i>Phương thức thanh toán
+                        </h5>
+                        @foreach (var method in Model.PaymentMethods)
+                        {
+                            <div class="form-check payment-option">
+                                <input class="form-check-input" type="radio" name="paymentMethodId" 
+                                       id="payment_@method.PaymentMethodId" value="@method.PaymentMethodId" 
+                                       @(Model.PaymentMethods.IndexOf(method) == 0 ? "checked" : "") required>
+                                <label class="form-check-label" for="payment_@method.PaymentMethodId">
+                                    <div class="payment-info">
+                                        <strong>@method.MethodName</strong>
+                                        @if (!string.IsNullOrEmpty(method.Description))
+                                        {
+                                            <div class="text-muted small">@method.Description</div>
+                                        }
+                                    </div>
+                                </label>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Voucher Code -->
+                    <div class="checkout-section">
+                        <h5 class="section-title">
+                            <i class="bi bi-tag me-2"></i>Mã giảm giá
+                        </h5>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="voucherCode" name="voucherCode" 
+                                   placeholder="Nhập mã giảm giá" value="@Model.VoucherCode">
+                            <button type="button" class="btn btn-outline-secondary" id="validateVoucherBtn">
+                                <i class="bi bi-check-circle me-1"></i>Áp dụng
+                            </button>
+                        </div>
+                        <div id="voucherMessage" class="mt-2"></div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Order Summary -->
+                <div class="col-lg-4">
+                    <div class="order-summary-card">
+                        <h5 class="mb-4">
+                            <i class="bi bi-receipt me-2"></i>Tóm tắt đơn hàng
+                        </h5>
+
+                        <div class="summary-row">
+                            <span>Tạm tính (@Model.CartItems.Sum(c => c.Quantity ?? 0) sản phẩm)</span>
+                            <span class="fw-bold">@Model.TotalAmount.ToString("N0") ₫</span>
+                        </div>
+
+                        <div class="summary-row" id="discountRow" style="@(Model.Discount > 0 ? "" : "display:none;")">
+                            <span>Giảm giá</span>
+                            <span class="text-success">-@Model.Discount.ToString("N0") ₫</span>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>Phí vận chuyển</span>
+                            <span class="text-success">Miễn phí</span>
+                        </div>
+
+                        <hr>
+
+                        <div class="summary-row summary-total">
+                            <span>Tổng cộng</span>
+                            <span class="total-price" id="finalAmount">@Model.FinalAmount.ToString("N0") ₫</span>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                                <i class="bi bi-check-circle me-2"></i>Xác nhận đặt hàng
+                            </button>
+                            <form method="post" asp-page-handler="CancelCheckout" class="d-inline">
+                                <button type="submit" class="btn btn-outline-secondary w-100">
+                                    <i class="bi bi-x-circle me-2"></i>Hủy đặt hàng
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="security-info mt-4">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-shield-check text-success me-2"></i>
+                                <small>Thanh toán an toàn & bảo mật</small>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-truck text-primary me-2"></i>
+                                <small>Giao hàng nhanh chóng</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('validateVoucherBtn').addEventListener('click', async function() {
+            const code = document.getElementById('voucherCode').value;
+            const total = @Model.TotalAmount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+            const messageDiv = document.getElementById('voucherMessage');
+
+            if (!code) {
+                messageDiv.innerHTML = '<div class="alert alert-warning">Vui lòng nhập mã giảm giá</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`?handler=ValidateVoucher&code=${encodeURIComponent(code)}&total=${total}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    messageDiv.innerHTML = `<div class="alert alert-success">Áp dụng thành công! Giảm ${data.discount.toLocaleString('vi-VN')} ₫</div>`;
+                    updateFinalAmount(data.discount);
+                } else {
+                    messageDiv.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+                }
+            } catch (error) {
+                messageDiv.innerHTML = '<div class="alert alert-danger">Có lỗi xảy ra. Vui lòng thử lại.</div>';
+            }
+        });
+
+        function updateFinalAmount(discount) {
+            const total = @Model.TotalAmount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+            const finalAmount = total - discount;
+            document.getElementById('finalAmount').textContent = finalAmount.toLocaleString('vi-VN') + ' ₫';
+            
+            const discountRow = document.getElementById('discountRow');
+            if (discount > 0) {
+                discountRow.style.display = '';
+                discountRow.querySelector('.text-success').textContent = '-' + discount.toLocaleString('vi-VN') + ' ₫';
+            } else {
+                discountRow.style.display = 'none';
+            }
+        }
+    </script>
+}
+

@@ -1,0 +1,115 @@
+@page
+@model NewWeb.Areas.Admin.Pages.Products.ListProductsModel
+@{
+    ViewData["Title"] = "Danh sách sản phẩm";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Danh sách sản phẩm</h1>
+        <a asp-page="CreateProducts" class="btn btn-primary">Thêm sản phẩm mới</a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <!-- Thống kê -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Tổng sản phẩm</h5>
+                    <h3>@Model.TotalProducts</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Đang bán</h5>
+                    <h3>@Model.ActiveProducts</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Ẩn</h5>
+                    <h3>@Model.HiddenProducts</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Hết hàng</h5>
+                    <h3>@Model.OutOfStockProducts</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng sản phẩm -->
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Hình ảnh</th>
+                        <th>Tên sản phẩm</th>
+                        <th>Barcode</th>
+                        <th>Thương hiệu</th>
+                        <th>Danh mục</th>
+                        <th>Số lượng</th>
+                        <th>Giá bán</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var product in Model.Products)
+                    {
+                        <tr>
+                            <td>@product.ProductId</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(product.ImagePr))
+                                {
+                                    <img src="@product.ImagePr" alt="@product.ProductName" style="width: 50px; height: 50px; object-fit: cover;" />
+                                }
+                                else
+                                {
+                                    <span>Không có ảnh</span>
+                                }
+                            </td>
+                            <td>@product.ProductName</td>
+                            <td>@product.Barcode</td>
+                            <td>@product.Brand?.NameBrand</td>
+                            <td>@product.Cate?.CategoryName</td>
+                            <td>@(product.Quantity ?? 0)</td>
+                            <td>@((product.SellingPrice ?? 0).ToString("N0")) VNĐ</td>
+                            <td>
+                                <span class="badge @(product.StatusProduct == "presently" ? "bg-success" : "bg-secondary")">
+                                    @product.StatusProduct
+                                </span>
+                            </td>
+                            <td>
+                                <a asp-page="UpdateProducts" asp-route-id="@product.ProductId" class="btn btn-sm btn-warning">Sửa</a>
+                                <form method="post" asp-page="UpdateProducts" asp-page-handler="Delete" asp-route-id="@product.ProductId" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');">
+                                    <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+

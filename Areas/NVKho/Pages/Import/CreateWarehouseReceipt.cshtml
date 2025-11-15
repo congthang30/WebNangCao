@@ -1,0 +1,151 @@
+@page
+@model NewWeb.Areas.NVKho.Pages.Import.CreateWarehouseReceiptModel
+@{
+    ViewData["Title"] = "Tạo phiếu nhập kho";
+}
+
+<div class="page-header">
+    <h1>
+        <i class="bi bi-plus-circle"></i>
+        Tạo phiếu nhập kho
+    </h1>
+    <p>Nhập hàng vào kho</p>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<form method="post" class="card">
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label asp-for="ReceiptNumber" class="form-label">Số phiếu *</label>
+                <input asp-for="ReceiptNumber" class="form-control" required />
+            </div>
+            <div class="col-md-6">
+                <label asp-for="ReceiptDate" class="form-label">Ngày nhập *</label>
+                <input asp-for="ReceiptDate" type="datetime-local" class="form-control" required />
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label asp-for="SupplierName" class="form-label">Nhà cung cấp</label>
+                <input asp-for="SupplierName" class="form-control" />
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Notes" class="form-label">Ghi chú</label>
+                <input asp-for="Notes" class="form-control" />
+            </div>
+        </div>
+
+        <hr>
+
+        <h5 class="mb-3">Chi tiết sản phẩm</h5>
+        <div id="productList">
+            <div class="product-item mb-3 p-3 border rounded">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label class="form-label">Sản phẩm</label>
+                        <select name="ProductIds" class="form-select product-select" required>
+                            <option value="">-- Chọn sản phẩm --</option>
+                            @foreach (var product in Model.Products)
+                            {
+                                <option value="@product.ProductId" 
+                                        data-barcode="@product.Barcode"
+                                        data-name="@product.ProductName"
+                                        data-price="@(product.SellingPrice ?? 0)">
+                                    @product.ProductName
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Barcode</label>
+                        <input type="text" name="Barcodes" class="form-control barcode-input" readonly />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Tên SP</label>
+                        <input type="text" name="ProductNames" class="form-control product-name-input" readonly />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Số lượng *</label>
+                        <input type="number" name="Quantities" class="form-control quantity-input" min="1" required />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Đơn giá *</label>
+                        <input type="number" name="UnitPrices" step="0.01" class="form-control price-input" min="0" required />
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="button" class="btn btn-danger w-100" onclick="removeProductItem(this)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button type="button" class="btn btn-success mb-3" onclick="addProductItem()">
+            <i class="bi bi-plus"></i> Thêm sản phẩm
+        </button>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i> Tạo phiếu nhập kho
+            </button>
+            <a asp-page="ListWarehouseReceipt" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Hủy
+            </a>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        function addProductItem() {
+            var productList = document.getElementById('productList');
+            var firstItem = productList.querySelector('.product-item');
+            var newItem = firstItem.cloneNode(true);
+            
+            // Reset values
+            newItem.querySelector('.product-select').value = '';
+            newItem.querySelector('.barcode-input').value = '';
+            newItem.querySelector('.product-name-input').value = '';
+            newItem.querySelector('.quantity-input').value = '';
+            newItem.querySelector('.price-input').value = '';
+            
+            productList.appendChild(newItem);
+            attachProductSelectHandlers(newItem);
+        }
+
+        function removeProductItem(button) {
+            var productList = document.getElementById('productList');
+            if (productList.children.length > 1) {
+                button.closest('.product-item').remove();
+            } else {
+                alert('Phải có ít nhất một sản phẩm');
+            }
+        }
+
+        function attachProductSelectHandlers(item) {
+            var select = item.querySelector('.product-select');
+            select.addEventListener('change', function() {
+                var option = this.options[this.selectedIndex];
+                if (option.value) {
+                    item.querySelector('.barcode-input').value = option.dataset.barcode || '';
+                    item.querySelector('.product-name-input').value = option.dataset.name || '';
+                    item.querySelector('.price-input').value = option.dataset.price || '';
+                }
+            });
+        }
+
+        // Attach handlers to initial items
+        document.querySelectorAll('.product-item').forEach(item => {
+            attachProductSelectHandlers(item);
+        });
+    </script>
+}
+

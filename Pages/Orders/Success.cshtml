@@ -1,0 +1,82 @@
+@page
+@model NewWeb.Pages.Orders.SuccessModel
+@{
+    ViewData["Title"] = "Đặt hàng thành công";
+}
+
+<link rel="stylesheet" href="~/css/orders.css" asp-append-version="true" />
+
+<div class="success-container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="success-card text-center">
+                <div class="success-icon">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <h2 class="success-title">Đặt hàng thành công!</h2>
+                <p class="success-message">
+                    Cảm ơn bạn đã mua sắm tại TechStore. Đơn hàng của bạn đã được xác nhận và đang được xử lý.
+                </p>
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success">
+                        <i class="bi bi-info-circle me-2"></i>@TempData["Success"]
+                    </div>
+                }
+
+                <div class="success-actions mt-4">
+                    <a asp-page="/Orders/Index" class="btn btn-primary btn-lg me-2">
+                        <i class="bi bi-box-seam me-2"></i>Xem đơn hàng của tôi
+                    </a>
+                    <a asp-page="/Index" class="btn btn-outline-primary btn-lg">
+                        <i class="bi bi-house me-2"></i>Tiếp tục mua sắm
+                    </a>
+                </div>
+
+                <div class="success-info mt-5">
+                    <h5 class="mb-3">Những gì tiếp theo?</h5>
+                    <div class="row text-start">
+                        <div class="col-md-6 mb-3">
+                            <div class="info-item">
+                                <i class="bi bi-envelope-check text-primary me-2"></i>
+                                <div>
+                                    <strong>Email xác nhận</strong>
+                                    <p class="text-muted mb-0 small">Chúng tôi đã gửi email xác nhận đơn hàng đến bạn</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="info-item">
+                                <i class="bi bi-truck text-success me-2"></i>
+                                <div>
+                                    <strong>Giao hàng</strong>
+                                    <p class="text-muted mb-0 small">Đơn hàng sẽ được giao trong 2-5 ngày làm việc</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="info-item">
+                                <i class="bi bi-telephone text-info me-2"></i>
+                                <div>
+                                    <strong>Hỗ trợ</strong>
+                                    <p class="text-muted mb-0 small">Liên hệ: 1900-xxxx nếu cần hỗ trợ</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="info-item">
+                                <i class="bi bi-clock-history text-warning me-2"></i>
+                                <div>
+                                    <strong>Theo dõi đơn hàng</strong>
+                                    <p class="text-muted mb-0 small">Bạn có thể theo dõi trạng thái đơn hàng trong tài khoản</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

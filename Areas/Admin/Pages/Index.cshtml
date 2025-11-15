@@ -1,0 +1,167 @@
+@page
+@model NewWeb.Areas.Admin.Pages.IndexModel
+@{
+    ViewData["Title"] = "Dashboard Admin";
+}
+
+<div class="page-header">
+    <h1>
+        <i class="bi bi-speedometer2"></i>
+        Dashboard Admin
+    </h1>
+    <p>Quản lý tổng quan hệ thống EasyBuy</p>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<!-- Top Row - Overall Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="stat-card primary">
+            <div class="stat-card-header">
+                <div class="stat-card-title">TỔNG NGƯỜI DÙNG</div>
+                <div class="stat-card-icon">
+                    <i class="bi bi-people"></i>
+                </div>
+            </div>
+            <p class="stat-card-value">@Model.TotalUsers</p>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card success">
+            <div class="stat-card-header">
+                <div class="stat-card-title">TỔNG SẢN PHẨM</div>
+                <div class="stat-card-icon">
+                    <i class="bi bi-box-seam"></i>
+                </div>
+            </div>
+            <p class="stat-card-value">@Model.TotalProducts</p>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card info">
+            <div class="stat-card-header">
+                <div class="stat-card-title">TỔNG ĐƠN HÀNG</div>
+                <div class="stat-card-icon">
+                    <i class="bi bi-cart3"></i>
+                </div>
+            </div>
+            <p class="stat-card-value">@Model.TotalOrders</p>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card warning">
+            <div class="stat-card-header">
+                <div class="stat-card-title">TỔNG DOANH THU</div>
+                <div class="stat-card-icon">
+                    <i class="bi bi-currency-dollar"></i>
+                </div>
+            </div>
+            <p class="stat-card-value">@Model.TotalRevenue.ToString("N0") VNĐ</p>
+        </div>
+    </div>
+</div>
+
+<!-- Middle Row - Monthly Statistics -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="stat-card success">
+            <div class="stat-card-header">
+                <div class="stat-card-title">NGƯỜI DÙNG MỚI (THÁNG NÀY)</div>
+                <div class="stat-card-icon">
+                    <i class="bi bi-person-plus"></i>
+                </div>
+            </div>
+            <p class="stat-card-value">@Model.NewUsersThisMonth</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="stat-card info">
+            <div class="stat-card-header">
+                <div class="stat-card-title">ĐƠN HÀNG MỚI (THÁNG NÀY)</div>
+                <div class="stat-card-icon">
+                    <i class="bi bi-cart-plus"></i>
+                </div>
+            </div>
+            <p class="stat-card-value">@Model.NewOrdersThisMonth</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="stat-card warning">
+            <div class="stat-card-header">
+                <div class="stat-card-title">DOANH THU (THÁNG NÀY)</div>
+                <div class="stat-card-icon">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+            </div>
+            <p class="stat-card-value">@Model.RevenueThisMonth.ToString("N0") VNĐ</p>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Row - Detailed Statistics -->
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <div class="detail-card">
+            <div class="detail-card-header">
+                Thống kê đơn hàng
+            </div>
+            <div class="detail-card-body">
+                <div class="stat-item">
+                    <span class="stat-item-label">Chờ xác nhận</span>
+                    <span class="stat-item-value">
+                        <span class="badge badge-custom badge-yellow">@Model.PendingOrders</span>
+                    </span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-item-label">Đã xác nhận</span>
+                    <span class="stat-item-value">
+                        <span class="badge badge-custom badge-blue">@Model.ConfirmedOrders</span>
+                    </span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-item-label">Đã giao</span>
+                    <span class="stat-item-value">
+                        <span class="badge badge-custom badge-green">@Model.DeliveredOrders</span>
+                    </span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-item-label">Đã hủy</span>
+                    <span class="stat-item-value">
+                        <span class="badge badge-custom badge-red">@Model.CancelledOrders</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="detail-card">
+            <div class="detail-card-header">
+                Thống kê sản phẩm
+            </div>
+            <div class="detail-card-body">
+                <div class="stat-item">
+                    <span class="stat-item-label">Hết hàng</span>
+                    <span class="stat-item-value">
+                        <span class="badge badge-custom badge-red">@Model.OutOfStockProducts</span>
+                    </span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-item-label">Sắp hết hàng</span>
+                    <span class="stat-item-value">
+                        <span class="badge badge-custom badge-orange">@Model.LowStockProducts</span>
+                    </span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-item-label">Nổi bật</span>
+                    <span class="stat-item-value">
+                        <span class="badge badge-custom badge-green">@Model.FeaturedProducts</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

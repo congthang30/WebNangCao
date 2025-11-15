@@ -1,0 +1,64 @@
+@page
+@model NewWeb.Areas.NVKD.Pages.Invoices.ListInvoiceModel
+@{
+    ViewData["Title"] = "Danh sách hóa đơn";
+}
+
+<div class="page-header">
+    <h1>
+        <i class="bi bi-receipt"></i>
+        Danh sách hóa đơn
+    </h1>
+    <p>Quản lý hóa đơn đã xuất</p>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Mã hóa đơn</th>
+                    <th>Mã đơn hàng</th>
+                    <th>Khách hàng</th>
+                    <th>Tổng tiền</th>
+                    <th>Người tạo</th>
+                    <th>Ngày tạo</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Invoices.Any())
+                {
+                    @foreach (var invoice in Model.Invoices)
+                    {
+                        <tr>
+                            <td>#@invoice.InvoiceId</td>
+                            <td>#@invoice.OrderId</td>
+                            <td>@invoice.Order?.User?.FullName</td>
+                            <td>@((invoice.Order?.TotalAmount ?? 0).ToString("N0")) VNĐ</td>
+                            <td>@invoice.CreatedByUser?.FullName</td>
+                            <td>@invoice.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                <a asp-page="DetailsInvoice" asp-route-id="@invoice.InvoiceId" class="btn btn-sm btn-info">
+                                    <i class="bi bi-eye"></i> Xem chi tiết
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">Không có hóa đơn nào</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+

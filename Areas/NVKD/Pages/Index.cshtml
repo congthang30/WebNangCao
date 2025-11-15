@@ -1,0 +1,131 @@
+@page
+@model NewWeb.Areas.NVKD.Pages.IndexModel
+@{
+    ViewData["Title"] = "Dashboard NVKD";
+}
+
+<div class="page-header">
+    <h1>
+        <i class="bi bi-speedometer2"></i>
+        Dashboard NVKD
+    </h1>
+    <p>Quản lý đơn hàng và hóa đơn</p>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<!-- Top Row - Today Statistics -->
+<div class="row mb-4">
+    <div class="col-md-6 mb-3">
+        <div class="stat-card success">
+            <div class="stat-card-header">
+                <div class="stat-card-title">ĐƠN HÀNG MỚI HÔM NAY</div>
+                <div class="stat-card-icon">
+                    <i class="bi bi-cart-plus"></i>
+                </div>
+            </div>
+            <p class="stat-card-value">@Model.NewOrdersToday</p>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="stat-card info">
+            <div class="stat-card-header">
+                <div class="stat-card-title">ĐƠN ĐÃ XÁC NHẬN HÔM NAY</div>
+                <div class="stat-card-icon">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+            </div>
+            <p class="stat-card-value">@Model.ConfirmedOrdersToday</p>
+        </div>
+    </div>
+</div>
+
+<!-- Middle Row - Monthly Statistics -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="stat-card success">
+            <div class="stat-card-header">
+                <div class="stat-card-title">ĐƠN HÀNG MỚI (THÁNG NÀY)</div>
+                <div class="stat-card-icon">
+                    <i class="bi bi-cart-plus"></i>
+                </div>
+            </div>
+            <p class="stat-card-value">@Model.NewOrdersThisMonth</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="stat-card info">
+            <div class="stat-card-header">
+                <div class="stat-card-title">ĐƠN ĐÃ XÁC NHẬN (THÁNG NÀY)</div>
+                <div class="stat-card-icon">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+            </div>
+            <p class="stat-card-value">@Model.ConfirmedOrdersThisMonth</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="stat-card warning">
+            <div class="stat-card-header">
+                <div class="stat-card-title">DOANH THU (THÁNG NÀY)</div>
+                <div class="stat-card-icon">
+                    <i class="bi bi-currency-dollar"></i>
+                </div>
+            </div>
+            <p class="stat-card-value">@Model.TotalRevenueThisMonth.ToString("N0") VNĐ</p>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Orders -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Đơn hàng mới nhất cần xử lý</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Mã đơn</th>
+                            <th>Khách hàng</th>
+                            <th>Tổng tiền</th>
+                            <th>Ngày tạo</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.RecentOrders.Any())
+                        {
+                            @foreach (var order in Model.RecentOrders)
+                            {
+                                <tr>
+                                    <td>#@order.OrderId</td>
+                                    <td>@order.User?.FullName</td>
+                                    <td>@((order.TotalAmount ?? 0).ToString("N0")) VNĐ</td>
+                                    <td>@order.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        <a asp-page="/NVKD/Orders/Details" asp-route-id="@order.OrderId" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-eye"></i> Xem chi tiết
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">Không có đơn hàng mới</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,200 @@
+@page
+@model NewWeb.Areas.NVKho.Pages.Export.ListInvoiceWarehouseModel
+@{
+    ViewData["Title"] = "Danh sách phiếu xuất kho";
+}
+
+<div class="page-header">
+    <h1>
+        <i class="bi bi-receipt-cutoff"></i>
+        Danh sách phiếu xuất kho
+    </h1>
+    <p>Quản lý các phiếu xuất kho đã tạo</p>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Mã phiếu</th>
+                    <th>Mã đơn hàng</th>
+                    <th>Khách hàng</th>
+                    <th>Nhân viên</th>
+                    <th>Tổng số lượng</th>
+                    <th>Ngày xuất</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Invoices.Any())
+                {
+                    @foreach (var invoice in Model.Invoices)
+                    {
+                        <tr>
+                            <td>#@invoice.InvoiceWareHouseID</td>
+                            <td>#@invoice.OrderID</td>
+                            <td>@invoice.Order?.User?.FullName</td>
+                            <td>@invoice.Staff?.FullName</td>
+                            <td>@invoice.TotalQuantity</td>
+                            <td>@invoice.ExportDate.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-info" onclick="viewInvoiceDetails(@invoice.InvoiceWareHouseID)">
+                                    <i class="bi bi-eye"></i> Xem
+                                </button>
+                                <button type="button" class="btn btn-sm btn-primary" onclick="printInvoice(@invoice.InvoiceWareHouseID)">
+                                    <i class="bi bi-printer"></i> In
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">Không có phiếu xuất kho nào</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Invoice Details -->
+<div class="modal fade" id="invoiceDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Chi tiết phiếu xuất kho</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="invoiceDetailsContent">
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Print Bill -->
+<div class="modal fade" id="printBillModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Phiếu xuất kho</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <pre id="billContent" style="font-family: 'Courier New', monospace; white-space: pre-wrap;"></pre>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" onclick="window.print()">
+                    <i class="bi bi-printer"></i> In
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function viewInvoiceDetails(invoiceId) {
+            $('#invoiceDetailsModal').modal('show');
+            $('#invoiceDetailsContent').html('<div class="text-center"><div class="spinner-border"></div></div>');
+
+            fetch('?handler=InvoiceDetails&invoiceId=' + invoiceId)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        var invoice = data.data;
+                        var html = `
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <h6>Thông tin khách hàng</h6>
+                                    <p><strong>Tên:</strong> ${invoice.customerName || 'N/A'}</p>
+                                    <p><strong>SĐT:</strong> ${invoice.phone || 'N/A'}</p>
+                                    <p><strong>Địa chỉ:</strong> ${invoice.address || 'N/A'}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Thông tin phiếu</h6>
+                                    <p><strong>Mã phiếu:</strong> #${invoice.invoiceId}</p>
+                                    <p><strong>Ngày xuất:</strong> ${invoice.createdAt || 'N/A'}</p>
+                                    <p><strong>Nhân viên:</strong> ${invoice.staffName || 'N/A'}</p>
+                                </div>
+                            </div>
+                            <hr>
+                            <h6>Chi tiết sản phẩm</h6>
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Sản phẩm</th>
+                                        <th>Thương hiệu</th>
+                                        <th>Số lượng</th>
+                                        <th>Đơn giá</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+
+                        invoice.products.forEach(product => {
+                            html += `
+                                <tr>
+                                    <td>${product.productName || 'N/A'}</td>
+                                    <td>${product.brand || 'N/A'}</td>
+                                    <td>${product.quantity || 0}</td>
+                                    <td>${(product.unitPrice || 0).toLocaleString('vi-VN')} VNĐ</td>
+                                </tr>`;
+                        });
+
+                        html += `
+                                </tbody>
+                            </table>`;
+
+                        $('#invoiceDetailsContent').html(html);
+                    } else {
+                        $('#invoiceDetailsContent').html('<div class="alert alert-danger">' + data.message + '</div>');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    $('#invoiceDetailsContent').html('<div class="alert alert-danger">Có lỗi xảy ra khi tải chi tiết phiếu xuất kho</div>');
+                });
+        }
+
+        function printInvoice(warehouseId) {
+            fetch('?handler=PrintWarehouseDetail&warehouseid=' + warehouseId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    $('#billContent').text(data.billContent);
+                    $('#printBillModal').modal('show');
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi tạo phiếu xuất kho');
+            });
+        }
+    </script>
+}
+

@@ -1,0 +1,164 @@
+@page
+@model NewWeb.Pages.Orders.IndexModel
+@{
+    ViewData["Title"] = "Đơn hàng của tôi";
+}
+
+<link rel="stylesheet" href="~/css/orders.css" asp-append-version="true" />
+
+<div class="orders-container">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="page-title">
+                <i class="bi bi-box-seam me-2"></i>Đơn hàng của tôi
+            </h2>
+        </div>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (!Model.Orders.Any())
+    {
+        <div class="empty-orders">
+            <div class="empty-icon">
+                <i class="bi bi-inbox"></i>
+            </div>
+            <h3>Bạn chưa có đơn hàng nào</h3>
+            <p class="text-muted">Hãy bắt đầu mua sắm ngay!</p>
+            <a asp-page="/Index" class="btn btn-primary btn-lg mt-3">
+                <i class="bi bi-arrow-left me-2"></i>Tiếp tục mua sắm
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="orders-list">
+            @foreach (var order in Model.Orders)
+            {
+                <div class="order-card">
+                    <div class="order-header">
+                        <div class="order-info">
+                            <h5 class="order-id">
+                                <i class="bi bi-receipt me-2"></i>Đơn hàng #@order.OrderId
+                            </h5>
+                            <div class="order-meta">
+                                <span class="badge bg-info">
+                                    <i class="bi bi-calendar me-1"></i>@order.CreatedAt?.ToString("dd/MM/yyyy HH:mm")
+                                </span>
+                                <span class="badge @GetStatusBadgeClass(order.Status)">
+                                    @order.Status
+                                </span>
+                                <span class="badge @GetPaymentBadgeClass(order.StatusPayment)">
+                                    @order.StatusPayment
+                                </span>
+                            </div>
+                        </div>
+                        <div class="order-actions">
+                            <a asp-page="/Orders/Detail" asp-route-id="@order.OrderId" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye me-1"></i>Chi tiết
+                            </a>
+                            @if (order.Status == "Chờ xác nhận")
+                            {
+                                <form method="post" asp-page-handler="CancelOrder" class="d-inline" 
+                                      onsubmit="return confirm('Bạn có chắc muốn hủy đơn hàng này?');">
+                                    <input type="hidden" name="orderId" value="@order.OrderId" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-x-circle me-1"></i>Hủy đơn
+                                    </button>
+                                </form>
+                            }
+                            @if (order.Status == "Đã giao" || order.Status == "Đã hủy")
+                            {
+                                <form method="post" asp-page-handler="RepeatOrder" class="d-inline">
+                                    <input type="hidden" name="orderId" value="@order.OrderId" />
+                                    <button type="submit" class="btn btn-sm btn-outline-success">
+                                        <i class="bi bi-arrow-repeat me-1"></i>Mua lại
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="order-items">
+                        @foreach (var detail in order.OrderDetails.Take(3))
+                        {
+                            <div class="order-item">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <div class="d-flex align-items-center">
+                                            @if (!string.IsNullOrEmpty(detail.Product?.ImagePr))
+                                            {
+                                                <img src="@detail.Product.ImagePr" alt="@detail.Product.ProductName" 
+                                                     class="item-thumbnail" onerror="this.src='/images/no-image.svg';">
+                                            }
+                                            <div class="ms-3">
+                                                <h6 class="mb-1">@detail.Product?.ProductName</h6>
+                                                <small class="text-muted">Số lượng: @detail.Quantity</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        <div class="item-price">@(((detail.Quantity ?? 0) * (detail.UnitPrice ?? 0)).ToString("N0")) ₫</div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        @if (order.OrderDetails.Count > 3)
+                        {
+                            <div class="text-center mt-2">
+                                <small class="text-muted">Và @(order.OrderDetails.Count - 3) sản phẩm khác...</small>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="order-footer">
+                        <div class="order-total">
+                            <span class="total-label">Tổng cộng:</span>
+                            <span class="total-amount">@((order.FinalTotal ?? order.TotalAmount ?? 0).ToString("N0")) ₫</span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@functions {
+    private string GetStatusBadgeClass(string? status)
+    {
+        return status switch
+        {
+            "Chờ xác nhận" => "bg-warning text-dark",
+            "Đang giao hàng" => "bg-info",
+            "Đã giao" => "bg-success",
+            "Đã hủy" => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string GetPaymentBadgeClass(string? statusPayment)
+    {
+        return statusPayment switch
+        {
+            "Đã thanh toán" => "bg-success",
+            "Chưa thanh toán" => "bg-warning text-dark",
+            "Thanh toán thất bại" => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+}
+

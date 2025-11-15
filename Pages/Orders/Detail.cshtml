@@ -1,0 +1,195 @@
+@page "{id:int}"
+@model NewWeb.Pages.Orders.DetailModel
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+}
+
+<link rel="stylesheet" href="~/css/orders.css" asp-append-version="true" />
+
+<div class="order-detail-container">
+    @if (Model.Order == null)
+    {
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle me-2"></i>Không tìm thấy đơn hàng.
+            <a asp-page="/Orders/Index" class="alert-link">Quay lại danh sách đơn hàng</a>
+        </div>
+    }
+    else
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="page-title">
+                    <i class="bi bi-receipt me-2"></i>Chi tiết đơn hàng #@Model.Order.OrderId
+                </h2>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Order Info -->
+            <div class="col-lg-8">
+                <!-- Order Status -->
+                <div class="order-status-card mb-4">
+                    <div class="status-badges">
+                        <span class="badge @GetStatusBadgeClass(Model.Order.Status) fs-6">
+                            @Model.Order.Status
+                        </span>
+                        <span class="badge @GetPaymentBadgeClass(Model.Order.StatusPayment) fs-6">
+                            @Model.Order.StatusPayment
+                        </span>
+                    </div>
+                    <div class="order-date mt-3">
+                        <i class="bi bi-calendar me-2"></i>
+                        Ngày đặt: @Model.Order.CreatedAt?.ToString("dd/MM/yyyy HH:mm")
+                    </div>
+                </div>
+
+                <!-- Order Items -->
+                <div class="order-items-card mb-4">
+                    <h5 class="mb-3">
+                        <i class="bi bi-cart3 me-2"></i>Sản phẩm đã đặt
+                    </h5>
+                    @foreach (var detail in Model.Order.OrderDetails)
+                    {
+                        <div class="order-item-detail">
+                            <div class="row align-items-center">
+                                <div class="col-md-2">
+                                    @if (!string.IsNullOrEmpty(detail.Product?.ImagePr))
+                                    {
+                                        <img src="@detail.Product.ImagePr" alt="@detail.Product.ProductName" 
+                                             class="item-image" onerror="this.src='/images/no-image.svg';">
+                                    }
+                                    else
+                                    {
+                                        <img src="/images/no-image.svg" alt="No Image" class="item-image">
+                                    }
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>@detail.Product?.ProductName</h6>
+                                    <small class="text-muted">
+                                        Số lượng: @detail.Quantity | 
+                                        Đơn giá: @((detail.UnitPrice ?? 0).ToString("N0")) ₫
+                                    </small>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <div class="item-total">
+                                        @(((detail.Quantity ?? 0) * (detail.UnitPrice ?? 0)).ToString("N0")) ₫
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="col-lg-4">
+                <div class="order-summary-card">
+                    <h5 class="mb-4">
+                        <i class="bi bi-info-circle me-2"></i>Thông tin đơn hàng
+                    </h5>
+
+                    <!-- Delivery Address -->
+                    <div class="info-section mb-4">
+                        <h6><i class="bi bi-geo-alt me-2"></i>Địa chỉ giao hàng</h6>
+                        <p class="mb-0">
+                            @Model.Order.Address?.Street<br>
+                            @Model.Order.Address?.Ward, @Model.Order.Address?.District, @Model.Order.Address?.City<br>
+                            <i class="bi bi-telephone me-1"></i>@Model.Order.Address?.Phone
+                        </p>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="info-section mb-4">
+                        <h6><i class="bi bi-wallet2 me-2"></i>Phương thức thanh toán</h6>
+                        <p class="mb-0">@Model.Order.PaymentMethod?.MethodName</p>
+                    </div>
+
+                    <!-- Order Summary -->
+                    <div class="summary-section">
+                        <div class="summary-row">
+                            <span>Tạm tính</span>
+                            <span>@((Model.Order.TotalAmount ?? 0).ToString("N0")) ₫</span>
+                        </div>
+                        @if (Model.Order.Voucher != null)
+                        {
+                            <div class="summary-row">
+                                <span>Giảm giá (@Model.Order.Voucher.Code)</span>
+                                <span class="text-success">
+                                    -@(((Model.Order.TotalAmount ?? 0) - (Model.Order.FinalTotal ?? Model.Order.TotalAmount ?? 0)).ToString("N0")) ₫
+                                </span>
+                            </div>
+                        }
+                        <div class="summary-row">
+                            <span>Phí vận chuyển</span>
+                            <span class="text-success">Miễn phí</span>
+                        </div>
+                        <hr>
+                        <div class="summary-row summary-total">
+                            <span>Tổng cộng</span>
+                            <span class="total-price">
+                                @((Model.Order.FinalTotal ?? Model.Order.TotalAmount ?? 0).ToString("N0")) ₫
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="mt-4">
+                        @if (Model.Order.Status == "Chờ xác nhận")
+                        {
+                            <form method="post" asp-page="/Orders/Index" asp-page-handler="CancelOrder" 
+                                  onsubmit="return confirm('Bạn có chắc muốn hủy đơn hàng này?');" class="d-inline w-100">
+                                <input type="hidden" name="orderId" value="@Model.Order.OrderId" />
+                                <button type="submit" class="btn btn-outline-danger w-100">
+                                    <i class="bi bi-x-circle me-2"></i>Hủy đơn hàng
+                                </button>
+                            </form>
+                        }
+                        @if (Model.Order.Status == "Đã giao" || Model.Order.Status == "Đã hủy")
+                        {
+                            <form method="post" asp-page="/Orders/Index" asp-page-handler="RepeatOrder" class="d-inline w-100">
+                                <input type="hidden" name="orderId" value="@Model.Order.OrderId" />
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="bi bi-arrow-repeat me-2"></i>Mua lại
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <a asp-page="/Orders/Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Quay lại danh sách đơn hàng
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+@functions {
+    private string GetStatusBadgeClass(string? status)
+    {
+        return status switch
+        {
+            "Chờ xác nhận" => "bg-warning text-dark",
+            "Đang giao hàng" => "bg-info",
+            "Đã giao" => "bg-success",
+            "Đã hủy" => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string GetPaymentBadgeClass(string? statusPayment)
+    {
+        return statusPayment switch
+        {
+            "Đã thanh toán" => "bg-success",
+            "Chưa thanh toán" => "bg-warning text-dark",
+            "Thanh toán thất bại" => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+}
+

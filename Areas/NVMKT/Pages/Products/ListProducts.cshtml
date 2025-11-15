@@ -1,0 +1,248 @@
+@page
+@model NewWeb.Areas.NVMKT.Pages.Products.ListProductsModel
+@{
+    ViewData["Title"] = "Danh sách sản phẩm";
+}
+
+<div class="page-header">
+    <h1>
+        <i class="bi bi-box-seam"></i>
+        Danh sách sản phẩm
+    </h1>
+    <p>Quản lý và tìm kiếm sản phẩm</p>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+<!-- Thống kê -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="stat-card purple">
+            <div class="stat-card-header">
+                <div class="stat-card-title">TỔNG SẢN PHẨM</div>
+                <div class="stat-card-icon">
+                    <i class="bi bi-box-seam"></i>
+                </div>
+            </div>
+            <p class="stat-card-value">@Model.TotalProducts</p>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card success">
+            <div class="stat-card-header">
+                <div class="stat-card-title">NỔI BẬT</div>
+                <div class="stat-card-icon">
+                    <i class="bi bi-star-fill"></i>
+                </div>
+            </div>
+            <p class="stat-card-value">@Model.FeaturedProducts</p>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card danger">
+            <div class="stat-card-header">
+                <div class="stat-card-title">HẾT HÀNG</div>
+                <div class="stat-card-icon">
+                    <i class="bi bi-x-circle"></i>
+                </div>
+            </div>
+            <p class="stat-card-value">@Model.OutOfStockProducts</p>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card warning">
+            <div class="stat-card-header">
+                <div class="stat-card-title">SẮP HẾT HÀNG</div>
+                <div class="stat-card-icon">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+            </div>
+            <p class="stat-card-value">@Model.LowStockProducts</p>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Form -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-funnel"></i> Bộ lọc tìm kiếm</h5>
+    </div>
+    <div class="card-body">
+        <form method="get">
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Tên sản phẩm</label>
+                    <input asp-for="ProductName" class="form-control" />
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Barcode</label>
+                    <input asp-for="Barcode" class="form-control" />
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Thương hiệu</label>
+                    <select asp-for="BrandId" asp-items="Model.Brands" class="form-select">
+                        <option value="">-- Tất cả --</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Danh mục</label>
+                    <select asp-for="CateId" asp-items="Model.Categories" class="form-select">
+                        <option value="">-- Tất cả --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Trạng thái</label>
+                    <select asp-for="StatusProduct" class="form-select">
+                        <option value="">-- Tất cả --</option>
+                        <option value="presently">Đang bán</option>
+                        <option value="hidden">Ẩn</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Sản phẩm nổi bật</label>
+                    <select asp-for="IsFeatured" class="form-select">
+                        <option value="">-- Tất cả --</option>
+                        <option value="true">Có</option>
+                        <option value="false">Không</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Giá bán</label>
+                    <input asp-for="SellingPrice" type="number" step="0.01" class="form-control" />
+                </div>
+                <div class="col-md-3 mb-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Tìm kiếm
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Bảng sản phẩm -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Danh sách sản phẩm</h5>
+        <a asp-page="CreateProducts" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-circle"></i> Thêm sản phẩm mới
+        </a>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Hình ảnh</th>
+                        <th>Tên sản phẩm</th>
+                        <th>Barcode</th>
+                        <th>Thương hiệu</th>
+                        <th>Danh mục</th>
+                        <th>Số lượng</th>
+                        <th>Giá bán</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Products.Any())
+                    {
+                        @foreach (var product in Model.Products)
+                        {
+                            <tr>
+                                <td>@product.ProductId</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(product.ImagePr))
+                                    {
+                                        <img src="@product.ImagePr" alt="@product.ProductName" style="width: 50px; height: 50px; object-fit: cover;" />
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Không có ảnh</span>
+                                    }
+                                </td>
+                                <td>@product.ProductName</td>
+                                <td>@product.Barcode</td>
+                                <td>@product.Brand?.NameBrand</td>
+                                <td>@product.Cate?.CategoryName</td>
+                                <td>
+                                    <span class="badge @((product.Quantity ?? 0) <= 10 ? "bg-warning" : "bg-success")">
+                                        @(product.Quantity ?? 0)
+                                    </span>
+                                </td>
+                                <td>@((product.SellingPrice ?? 0).ToString("N0")) VNĐ</td>
+                                <td>
+                                    <span class="badge @(product.StatusProduct == "presently" ? "bg-success" : "bg-secondary")">
+                                        @(product.StatusProduct == "presently" ? "Đang bán" : "Ẩn")
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-page="UpdateProducts" asp-route-id="@product.ProductId" class="btn btn-sm btn-warning">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-info" onclick="toggleStatus(@product.ProductId)">
+                                            <i class="bi bi-toggle-on"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="10" class="text-center text-muted">Không tìm thấy sản phẩm nào</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleStatus(productId) {
+            if (!confirm('Bạn có chắc chắn muốn thay đổi trạng thái sản phẩm này?')) {
+                return;
+            }
+
+            fetch('?handler=ToggleStatus&id=' + productId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi thay đổi trạng thái');
+            });
+        }
+    </script>
+}
+
+<style>
+    .stat-card.purple { border-top-color: #9c27b0; }
+</style>
+

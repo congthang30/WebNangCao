@@ -1,0 +1,64 @@
+@page
+@model NewWeb.Areas.NVKD.Pages.Orders.ListOrderConfirmedModel
+@{
+    ViewData["Title"] = "Danh sách đơn đã xác nhận";
+}
+
+<div class="page-header">
+    <h1>
+        <i class="bi bi-check-circle"></i>
+        Danh sách đơn đã xác nhận
+    </h1>
+    <p>Đơn hàng đã được xác nhận</p>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Mã đơn</th>
+                    <th>Khách hàng</th>
+                    <th>Địa chỉ</th>
+                    <th>Tổng tiền</th>
+                    <th>Số lượng SP</th>
+                    <th>Ngày tạo</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Orders.Any())
+                {
+                    @foreach (var order in Model.Orders)
+                    {
+                        <tr>
+                            <td>#@order.OrderId</td>
+                            <td>@order.User?.FullName</td>
+                            <td>@order.Address?.FullAddress</td>
+                            <td>@((order.TotalAmount ?? 0).ToString("N0")) VNĐ</td>
+                            <td>@order.OrderDetails.Count</td>
+                            <td>@order.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                <a asp-page="Details" asp-route-id="@order.OrderId" class="btn btn-sm btn-info">
+                                    <i class="bi bi-eye"></i> Xem chi tiết
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">Không có đơn hàng đã xác nhận</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+

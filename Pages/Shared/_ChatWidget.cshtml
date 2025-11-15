@@ -1,0 +1,197 @@
+@* Chat Widget Component *@
+<div id="chatWidget" class="chat-widget">
+    <div id="chatToggle" class="chat-toggle">
+        <i class="bi bi-chat-dots"></i>
+        <span class="chat-badge" id="chatBadge" style="display: none;">0</span>
+    </div>
+    
+    <div id="chatWindow" class="chat-window" style="display: none;">
+        <div class="chat-header">
+            <div class="chat-header-content">
+                <i class="bi bi-robot"></i>
+                <span>AI Assistant</span>
+            </div>
+            <button id="chatMinimize" class="chat-minimize">
+                <i class="bi bi-dash"></i>
+            </button>
+            <button id="chatClose" class="chat-close">
+                <i class="bi bi-x"></i>
+            </button>
+        </div>
+        
+        <div id="chatMessages" class="chat-messages">
+            <div class="chat-message bot-message">
+                <div class="message-avatar">
+                    <i class="bi bi-robot"></i>
+                </div>
+                <div class="message-content">
+                    <p>Xin chào! Tôi là AI Assistant của EasyBuy. Tôi có thể giúp gì cho bạn?</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-input-container">
+            <div class="chat-typing-indicator" id="chatTyping" style="display: none;">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <input type="text" id="chatInput" class="chat-input" placeholder="Nhập tin nhắn..." />
+            <button id="chatSend" class="chat-send-btn">
+                <i class="bi bi-send-fill"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="~/css/chat-widget.css" asp-append-version="true" />
+
+<script>
+    (function() {
+        const chatWidget = document.getElementById('chatWidget');
+        const chatToggle = document.getElementById('chatToggle');
+        const chatWindow = document.getElementById('chatWindow');
+        const chatClose = document.getElementById('chatClose');
+        const chatMinimize = document.getElementById('chatMinimize');
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const chatSend = document.getElementById('chatSend');
+        const chatTyping = document.getElementById('chatTyping');
+        const chatBadge = document.getElementById('chatBadge');
+        
+        let isOpen = false;
+        let unreadCount = 0;
+        
+        // Toggle chat window
+        chatToggle.addEventListener('click', function() {
+            if (!isOpen) {
+                chatWindow.style.display = 'flex';
+                chatWidget.classList.add('open');
+                isOpen = true;
+                unreadCount = 0;
+                chatBadge.style.display = 'none';
+                chatInput.focus();
+            } else {
+                toggleChat();
+            }
+        });
+        
+        // Close chat
+        chatClose.addEventListener('click', function() {
+            chatWindow.style.display = 'none';
+            chatWidget.classList.remove('open');
+            isOpen = false;
+        });
+        
+        // Minimize chat
+        chatMinimize.addEventListener('click', function() {
+            toggleChat();
+        });
+        
+        function toggleChat() {
+            if (isOpen) {
+                chatWindow.style.display = 'none';
+                chatWidget.classList.remove('open');
+                isOpen = false;
+            } else {
+                chatWindow.style.display = 'flex';
+                chatWidget.classList.add('open');
+                isOpen = true;
+                unreadCount = 0;
+                chatBadge.style.display = 'none';
+                chatInput.focus();
+            }
+        }
+        
+        // Send message
+        function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
+            
+            // Add user message
+            addMessage(message, 'user');
+            chatInput.value = '';
+            
+            // Show typing indicator
+            chatTyping.style.display = 'flex';
+            scrollToBottom();
+            
+            // Send to API
+            fetch('/api/chat/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ UserMessage: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                chatTyping.style.display = 'none';
+                
+                if (data.error) {
+                    addMessage('Xin lỗi, có lỗi xảy ra: ' + data.error, 'bot');
+                } else if (data.candidates && data.candidates.length > 0) {
+                    const reply = data.candidates[0].content.parts[0].text;
+                    addMessage(reply, 'bot');
+                } else {
+                    addMessage('Xin lỗi, không nhận được phản hồi.', 'bot');
+                }
+                
+                scrollToBottom();
+            })
+            .catch(error => {
+                chatTyping.style.display = 'none';
+                addMessage('Xin lỗi, có lỗi kết nối. Vui lòng thử lại sau.', 'bot');
+                console.error('Error:', error);
+                scrollToBottom();
+            });
+        }
+        
+        // Add message to chat
+        function addMessage(text, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${type}-message`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.innerHTML = type === 'user' 
+                ? '<i class="bi bi-person-circle"></i>' 
+                : '<i class="bi bi-robot"></i>';
+            
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            const p = document.createElement('p');
+            p.textContent = text;
+            content.appendChild(p);
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(content);
+            
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom();
+            
+            // Update unread count if chat is closed
+            if (!isOpen && type === 'bot') {
+                unreadCount++;
+                chatBadge.textContent = unreadCount;
+                chatBadge.style.display = unreadCount > 0 ? 'flex' : 'none';
+            }
+        }
+        
+        // Scroll to bottom
+        function scrollToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Send button click
+        chatSend.addEventListener('click', sendMessage);
+        
+        // Enter key press
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    })();
+</script>
+

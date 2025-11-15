@@ -1,0 +1,82 @@
+@page
+@model NewWeb.Pages.Account.UpdateAccountModel
+@{
+    ViewData["Title"] = "Cập nhật tài khoản";
+}
+
+<link rel="stylesheet" href="~/css/account.css" asp-append-version="true" />
+
+<div class="account-container">
+    <div class="account-card">
+        <div class="account-header">
+            <h2><i class="bi bi-person-gear me-2"></i>Cập nhật tài khoản</h2>
+            <p class="text-muted">Thay đổi thông tin cá nhân của bạn</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>@Model.ErrorMessage
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle me-2"></i>@Model.SuccessMessage
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <div class="current-info mb-4 p-3 bg-light rounded">
+            <h5 class="mb-3"><i class="bi bi-info-circle me-2"></i>Thông tin hiện tại</h5>
+            <p class="mb-2"><strong>Họ tên:</strong> @Model.CurrentUser.FullName</p>
+            <p class="mb-2"><strong>Email:</strong> @Model.CurrentUser.Email</p>
+            <p class="mb-0"><strong>Số điện thoại:</strong> @Model.CurrentUser.Phone</p>
+        </div>
+
+        <form method="post" class="account-form">
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label">
+                    <i class="bi bi-person me-2"></i>Họ và tên mới (để trống nếu không thay đổi)
+                </label>
+                <input asp-for="Name" class="form-control" placeholder="Nhập họ và tên mới" />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label">
+                    <i class="bi bi-envelope me-2"></i>Email mới (để trống nếu không thay đổi)
+                </label>
+                <input asp-for="Email" type="email" class="form-control" placeholder="Nhập email mới" />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Phone" class="form-label">
+                    <i class="bi bi-telephone me-2"></i>Số điện thoại mới (để trống nếu không thay đổi)
+                </label>
+                <input asp-for="Phone" type="tel" class="form-control" placeholder="Nhập số điện thoại mới" />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label text-danger">
+                    <i class="bi bi-lock-fill me-2"></i>Mật khẩu hiện tại (bắt buộc) *
+                </label>
+                <input asp-for="Password" type="password" class="form-control" placeholder="Nhập mật khẩu hiện tại để xác nhận" required />
+            </div>
+
+            <div class="d-grid gap-2 mb-3">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="bi bi-save me-2"></i>Cập nhật thông tin
+                </button>
+            </div>
+
+            <div class="text-center">
+                <a asp-page="/Index" class="text-muted">
+                    <i class="bi bi-arrow-left me-2"></i>Quay lại trang chủ
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+

@@ -1,0 +1,122 @@
+@page
+@model NewWeb.Areas.NVMKT.Pages.Products.CreateProductsModel
+@{
+    ViewData["Title"] = "Thêm sản phẩm mới";
+}
+
+<div class="page-header">
+    <h1>
+        <i class="bi bi-plus-circle"></i>
+        Thêm sản phẩm mới
+    </h1>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<form method="post" enctype="multipart/form-data" class="card">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label asp-for="ProductName" class="form-label">Tên sản phẩm *</label>
+                    <input asp-for="ProductName" class="form-control" required />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label asp-for="Barcode" class="form-label">Barcode *</label>
+                    <input asp-for="Barcode" class="form-control" required />
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label">Mô tả</label>
+            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label asp-for="Quantity" class="form-label">Số lượng *</label>
+                    <input asp-for="Quantity" type="number" class="form-control" min="0" required />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label asp-for="ImportPrice" class="form-label">Giá nhập *</label>
+                    <input asp-for="ImportPrice" type="number" step="0.01" class="form-control" min="0" required />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label asp-for="SellingPrice" class="form-label">Giá bán *</label>
+                    <input asp-for="SellingPrice" type="number" step="0.01" class="form-control" min="0" required />
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label asp-for="BrandId" class="form-label">Thương hiệu *</label>
+                    <select asp-for="BrandId" asp-items="Model.Brands" class="form-select" required>
+                        <option value="">-- Chọn thương hiệu --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label asp-for="CateId" class="form-label">Danh mục *</label>
+                    <select asp-for="CateId" asp-items="Model.Categories" class="form-select" required>
+                        <option value="">-- Chọn danh mục --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label asp-for="StatusProduct" class="form-label">Trạng thái *</label>
+                    <select asp-for="StatusProduct" class="form-select" required>
+                        <option value="presently">Đang bán</option>
+                        <option value="hidden">Ẩn</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label asp-for="Discount" class="form-label">Giảm giá (%)</label>
+                    <input asp-for="Discount" type="number" step="0.01" class="form-control" min="0" max="100" />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label asp-for="IsFeatured" class="form-label">Sản phẩm nổi bật</label>
+                    <div class="form-check form-switch">
+                        <input asp-for="IsFeatured" class="form-check-input" type="checkbox" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="ImagePr" class="form-label">Hình ảnh</label>
+            <input asp-for="ImagePr" type="file" class="form-control" accept="image/*" />
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i> Tạo sản phẩm
+            </button>
+            <a asp-page="ListProducts" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Hủy
+            </a>
+        </div>
+    </div>
+</form>
+

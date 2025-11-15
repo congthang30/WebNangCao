@@ -1,0 +1,133 @@
+@page "{id:int}"
+@model NewWeb.Areas.NVKD.Pages.Orders.DetailsModel
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+}
+
+<div class="page-header">
+    <h1>
+        <i class="bi bi-receipt-cutoff"></i>
+        Chi tiết đơn hàng #@Model.Order.OrderId
+    </h1>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Thông tin khách hàng</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Tên khách hàng:</strong> @Model.Order.User?.FullName</p>
+                <p><strong>Địa chỉ giao hàng:</strong> @Model.Order.Address?.FullAddress</p>
+                <p><strong>Số điện thoại:</strong> @Model.Order.Address?.Phone</p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Chi tiết sản phẩm</h5>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th>Số lượng</th>
+                            <th>Đơn giá</th>
+                            <th>Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var detail in Model.Order.OrderDetails)
+                        {
+                            <tr>
+                                <td>@detail.Product?.ProductName</td>
+                                <td>@detail.Quantity</td>
+                                <td>@((detail.UnitPrice ?? 0).ToString("N0")) VNĐ</td>
+                                <td>@(((detail.Quantity ?? 0) * (detail.UnitPrice ?? 0)).ToString("N0")) VNĐ</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card mb-3">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Thông tin đơn hàng</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Trạng thái:</strong> 
+                    <span class="badge @(Model.Order.Status == "Chờ xác nhận" ? "bg-warning" : "bg-success")">
+                        @Model.Order.Status
+                    </span>
+                </p>
+                <p><strong>Phương thức thanh toán:</strong> @Model.Order.PaymentMethod?.MethodName</p>
+                <p><strong>Voucher:</strong> @(Model.Order.Voucher?.Code ?? "Không áp dụng")</p>
+                <p><strong>Tổng tiền:</strong> @((Model.Order.TotalAmount ?? 0).ToString("N0")) VNĐ</p>
+                <p><strong>Thành tiền:</strong> @((Model.Order.FinalTotal ?? 0).ToString("N0")) VNĐ</p>
+                <p><strong>Ngày tạo:</strong> @Model.Order.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</p>
+            </div>
+        </div>
+
+        @if (Model.Order.Status == "Chờ xác nhận")
+        {
+            <div class="card">
+                <div class="card-body">
+                    <button type="button" class="btn btn-success w-100" onclick="exportInvoice(@Model.Order.OrderId)">
+                        <i class="bi bi-receipt"></i> Xuất hóa đơn
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="mt-3">
+    <a asp-page="ListOrderNew" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Quay lại
+    </a>
+</div>
+
+@section Scripts {
+    <script>
+        function exportInvoice(orderId) {
+            if (!confirm('Bạn có chắc chắn muốn xuất hóa đơn cho đơn hàng này?')) {
+                return;
+            }
+
+            var token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || 
+                       document.querySelector('input[type="hidden"][name="__RequestVerificationToken"]')?.value || '';
+
+            fetch('?handler=ExportInvoice&orderId=' + orderId, {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': token,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi xuất hóa đơn');
+            });
+        }
+    </script>
+}
+

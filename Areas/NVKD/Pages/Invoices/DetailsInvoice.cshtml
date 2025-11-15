@@ -1,0 +1,90 @@
+@page "{id:int}"
+@model NewWeb.Areas.NVKD.Pages.Invoices.DetailsInvoiceModel
+@using NewWeb.Models
+@{
+    ViewData["Title"] = "Chi tiết hóa đơn";
+}
+
+<div class="page-header">
+    <h1>
+        <i class="bi bi-receipt-cutoff"></i>
+        Chi tiết hóa đơn #@Model.Invoice.InvoiceId
+    </h1>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Thông tin khách hàng</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Tên khách hàng:</strong> @Model.Invoice.Order?.User?.FullName</p>
+                <p><strong>Địa chỉ giao hàng:</strong> @Model.Invoice.Order?.Address?.FullAddress</p>
+                <p><strong>Số điện thoại:</strong> @Model.Invoice.Order?.Address?.Phone</p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Chi tiết sản phẩm</h5>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th>Số lượng</th>
+                            <th>Đơn giá</th>
+                            <th>Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var detail in Model.Invoice.Order?.OrderDetails?.ToList() ?? new List<OrderDetail>())
+                        {
+                            <tr>
+                                <td>@detail.Product?.ProductName</td>
+                                <td>@detail.Quantity</td>
+                                <td>@((detail.UnitPrice ?? 0).ToString("N0")) VNĐ</td>
+                                <td>@(((detail.Quantity ?? 0) * (detail.UnitPrice ?? 0)).ToString("N0")) VNĐ</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card mb-3">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Thông tin hóa đơn</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Mã hóa đơn:</strong> #@Model.Invoice.InvoiceId</p>
+                <p><strong>Mã đơn hàng:</strong> #@Model.Invoice.OrderId</p>
+                <p><strong>Trạng thái:</strong> 
+                    <span class="badge bg-success">@Model.Invoice.Order?.Status</span>
+                </p>
+                <p><strong>Phương thức thanh toán:</strong> @Model.Invoice.Order?.PaymentMethod?.MethodName</p>
+                <p><strong>Voucher:</strong> @(Model.Invoice.Order?.Voucher?.Code ?? "Không áp dụng")</p>
+                <p><strong>Tổng tiền:</strong> @((Model.Invoice.Order?.TotalAmount ?? 0).ToString("N0")) VNĐ</p>
+                <p><strong>Thành tiền:</strong> @((Model.Invoice.Order?.FinalTotal ?? 0).ToString("N0")) VNĐ</p>
+                <p><strong>Người tạo:</strong> @Model.Invoice.CreatedByUser?.FullName</p>
+                <p><strong>Ngày tạo:</strong> @Model.Invoice.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a asp-page="ListInvoice" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Quay lại
+    </a>
+</div>
+

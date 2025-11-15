@@ -1,0 +1,373 @@
+@page
+@model NewWeb.Pages.Products.DetailModel
+@{
+    ViewData["Title"] = Model.ViewModel.Product.ProductName + " - Chi tiết sản phẩm";
+    var vm = Model.ViewModel;
+}
+
+<link rel="stylesheet" href="~/css/product-detail.css" asp-append-version="true" />
+
+<div class="container py-4">
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <!-- Product Image -->
+        <div class="col-lg-5">
+            <div class="product-image-wrapper">
+                @if (!string.IsNullOrEmpty(vm.Product.ImagePr))
+                {
+                    <img src="@vm.Product.ImagePr" alt="@vm.Product.ProductName" 
+                         class="product-main-image" onerror="this.src='/images/no-image.svg';" />
+                }
+                else
+                {
+                    <img src="/images/no-image.svg" alt="Không có ảnh" class="product-main-image" />
+                }
+                
+                @if (vm.Product.IsFeatured == true)
+                {
+                    <span class="badge-featured">
+                        <i class="bi bi-star-fill"></i> Sản phẩm nổi bật
+                    </span>
+                }
+                
+                @if (vm.Product.Discount.HasValue && vm.Product.Discount.Value > 0)
+                {
+                    <span class="badge-discount">
+                        -@((int)vm.Product.Discount.Value)%
+                    </span>
+                }
+            </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="col-lg-7">
+            <div class="product-info-section">
+                <h1 class="product-title">@vm.Product.ProductName</h1>
+                
+                <div class="product-meta">
+                    <span class="brand-tag">
+                        <i class="bi bi-tag-fill"></i> @vm.Product.Brand?.NameBrand
+                    </span>
+                    <span class="category-tag">
+                        <i class="bi bi-grid-fill"></i> @vm.Product.Cate?.CategoryName
+                    </span>
+                    <span class="view-count">
+                        <i class="bi bi-eye-fill"></i> @vm.Product.ViewCount lượt xem
+                    </span>
+                </div>
+
+                <div class="price-section">
+                    @if (vm.Product.SellingPrice.HasValue)
+                    {
+                        <div class="current-price">@vm.Product.SellingPrice.Value.ToString("N0") ₫</div>
+                        
+                        @if (vm.OriginalPrice.HasValue)
+                        {
+                            <div class="original-price">@vm.OriginalPrice.Value.ToString("N0") ₫</div>
+                            @if (vm.SavedAmount.HasValue)
+                            {
+                                <div class="saved-amount text-success">
+                                    <i class="bi bi-check-circle"></i> Tiết kiệm @vm.SavedAmount.Value.ToString("N0") ₫
+                                </div>
+                            }
+                        }
+                    }
+                </div>
+
+                <div class="stock-status">
+                    @if (vm.IsInStock)
+                    {
+                        if (vm.IsLowStock)
+                        {
+                            <span class="badge bg-warning text-dark">
+                                <i class="bi bi-exclamation-triangle"></i> Chỉ còn @vm.Product.Quantity sản phẩm
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">
+                                <i class="bi bi-check-circle"></i> Còn hàng
+                            </span>
+                        }
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">
+                            <i class="bi bi-x-circle"></i> Hết hàng
+                        </span>
+                    }
+                </div>
+
+                <div class="product-description">
+                    <h5><i class="bi bi-info-circle me-2"></i>Mô tả sản phẩm</h5>
+                    <p>@vm.Product.Description</p>
+                </div>
+
+                <div class="product-actions">
+                    @if (vm.IsInStock)
+                    {
+                        <form method="post" asp-page="/Cart/Index" asp-page-handler="AddToCart" class="d-inline">
+                            <input type="hidden" name="productId" value="@vm.Product.ProductId" />
+                            <input type="hidden" name="quantity" value="1" />
+                            <button type="submit" class="btn btn-primary btn-lg add-to-cart-btn">
+                                <i class="bi bi-cart-plus me-2"></i>Thêm vào giỏ hàng
+                            </button>
+                        </form>
+                        <button type="button" class="btn btn-outline-danger btn-lg wishlist-btn-detail" data-product-id="@vm.Product.ProductId" title="Thêm vào yêu thích">
+                            <i class="bi bi-heart"></i>
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-secondary btn-lg" disabled>
+                            <i class="bi bi-x-circle me-2"></i>Hết hàng
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="reviews-section">
+                <h3 class="section-title">
+                    <i class="bi bi-star-fill me-2"></i>Đánh giá sản phẩm
+                    <span class="review-count">(@vm.TotalRatings đánh giá)</span>
+                </h3>
+
+                @if (vm.TotalRatings > 0)
+                {
+                    <div class="rating-summary">
+                        <div class="avg-rating">
+                            <div class="rating-number">@vm.AverageRating.ToString("0.0")</div>
+                            <div class="rating-stars">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    if (i <= vm.AverageRating)
+                                    {
+                                        <i class="bi bi-star-fill text-warning"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-star text-warning"></i>
+                                    }
+                                }
+                            </div>
+                            <div class="rating-breakdown mt-3">
+                                <div class="rating-bar-item">
+                                    <span>5 <i class="bi bi-star-fill text-warning"></i></span>
+                                    <div class="progress flex-grow-1 mx-2">
+                                        <div class="progress-bar bg-warning" style="width: @((vm.TotalRatings > 0 ? (vm.FiveStarCount * 100.0 / vm.TotalRatings) : 0).ToString("0"))%"></div>
+                                    </div>
+                                    <span>@vm.FiveStarCount</span>
+                                </div>
+                                <div class="rating-bar-item">
+                                    <span>4 <i class="bi bi-star-fill text-warning"></i></span>
+                                    <div class="progress flex-grow-1 mx-2">
+                                        <div class="progress-bar bg-warning" style="width: @((vm.TotalRatings > 0 ? (vm.FourStarCount * 100.0 / vm.TotalRatings) : 0).ToString("0"))%"></div>
+                                    </div>
+                                    <span>@vm.FourStarCount</span>
+                                </div>
+                                <div class="rating-bar-item">
+                                    <span>3 <i class="bi bi-star-fill text-warning"></i></span>
+                                    <div class="progress flex-grow-1 mx-2">
+                                        <div class="progress-bar bg-warning" style="width: @((vm.TotalRatings > 0 ? (vm.ThreeStarCount * 100.0 / vm.TotalRatings) : 0).ToString("0"))%"></div>
+                                    </div>
+                                    <span>@vm.ThreeStarCount</span>
+                                </div>
+                                <div class="rating-bar-item">
+                                    <span>2 <i class="bi bi-star-fill text-warning"></i></span>
+                                    <div class="progress flex-grow-1 mx-2">
+                                        <div class="progress-bar bg-warning" style="width: @((vm.TotalRatings > 0 ? (vm.TwoStarCount * 100.0 / vm.TotalRatings) : 0).ToString("0"))%"></div>
+                                    </div>
+                                    <span>@vm.TwoStarCount</span>
+                                </div>
+                                <div class="rating-bar-item">
+                                    <span>1 <i class="bi bi-star-fill text-warning"></i></span>
+                                    <div class="progress flex-grow-1 mx-2">
+                                        <div class="progress-bar bg-warning" style="width: @((vm.TotalRatings > 0 ? (vm.OneStarCount * 100.0 / vm.TotalRatings) : 0).ToString("0"))%"></div>
+                                    </div>
+                                    <span>@vm.OneStarCount</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Rating Form -->
+                @if (vm.HasPurchased && !vm.HasRated)
+                {
+                    <div class="rating-form">
+                        <h5><i class="bi bi-pencil-square me-2"></i>Viết đánh giá của bạn</h5>
+                        <form method="post" asp-page-handler="AddRating" enctype="multipart/form-data">
+                            <input type="hidden" name="productId" value="@vm.Product.ProductId" />
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Đánh giá của bạn</label>
+                                <div class="rating-input">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <input type="radio" name="ratingValue" value="@i" id="star@(i)" required />
+                                        <label for="star@(i)"><i class="bi bi-star-fill"></i></label>
+                                    }
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Nhận xét</label>
+                                <textarea name="comment" class="form-control" rows="4" 
+                                          placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm..."></textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="bi bi-image me-1"></i>Ảnh đính kèm (tùy chọn)
+                                </label>
+                                <input type="file" name="image" class="form-control" accept="image/*" />
+                                <small class="text-muted">Chỉ hỗ trợ định dạng JPG, JPEG, PNG, GIF. Tối đa 5MB.</small>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send me-2"></i>Gửi đánh giá
+                            </button>
+                        </form>
+                    </div>
+                }
+
+                <!-- Reviews List -->
+                <div class="reviews-list mt-4">
+                    @foreach (var rating in vm.ApprovedRatings.OrderByDescending(r => r.CreatedAt))
+                    {
+                        <div class="review-item">
+                            <div class="review-header">
+                                <div class="reviewer-info">
+                                    <strong>@rating.User?.FullName</strong>
+                                    <div class="review-stars">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            if (i <= (rating.Star ?? 0))
+                                            {
+                                                <i class="bi bi-star-fill text-warning"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-star text-warning"></i>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                                <small class="text-muted">@rating.CreatedAt?.ToString("dd/MM/yyyy")</small>
+                            </div>
+                            @if (!string.IsNullOrEmpty(rating.Comment))
+                            {
+                                <p class="review-comment">@rating.Comment</p>
+                            }
+                            @if (!string.IsNullOrEmpty(rating.ImagePath))
+                            {
+                                <div class="review-image mt-2">
+                                    <img src="@rating.ImagePath" alt="Review image" class="img-thumbnail" 
+                                         style="max-width: 200px; cursor: pointer;" 
+                                         onclick="window.open('@rating.ImagePath', '_blank')" />
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Products -->
+    @if (vm.RelatedProducts.Any())
+    {
+        <div class="row mt-5">
+            <div class="col-12">
+                <h3 class="section-title">
+                    <i class="bi bi-grid-3x3-gap me-2"></i>Sản phẩm liên quan
+                </h3>
+                <div class="row g-4">
+                    @foreach (var product in vm.RelatedProducts)
+                    {
+                        <div class="col-md-6 col-lg-3">
+                            <div class="card h-100 shadow-sm hover-card">
+                                <a href="/Products/Detail?id=@product.ProductId" class="text-decoration-none text-dark">
+                                    <div class="position-relative">
+                                        @if (!string.IsNullOrEmpty(product.ImagePr))
+                                        {
+                                            <img src="@product.ImagePr" class="card-img-top" alt="@product.ProductName" 
+                                                 style="height: 200px; object-fit: cover;" onerror="this.src='/images/no-image.svg';">
+                                        }
+                                        else
+                                        {
+                                            <img src="/images/no-image.svg" class="card-img-top" alt="Không có ảnh" 
+                                                 style="height: 200px; object-fit: cover;">
+                                        }
+                                        
+                                        @if (product.IsFeatured == true)
+                                        {
+                                            <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-2">
+                                                <i class="bi bi-star-fill"></i> Nổi bật
+                                            </span>
+                                        }
+                                        
+                                        @if (product.Discount.HasValue && product.Discount.Value > 0)
+                                        {
+                                            <span class="badge bg-danger position-absolute top-0 end-0 m-2">
+                                                -@((int)product.Discount.Value)%
+                                            </span>
+                                        }
+                                    </div>
+                                    <div class="card-body">
+                                        <h6 class="card-title text-truncate">@product.ProductName</h6>
+                                        <p class="card-text">
+                                            <span class="text-primary fw-bold fs-5">
+                                                @product.SellingPrice?.ToString("N0") ₫
+                                            </span>
+                                        </p>
+                                        @if (product.Quantity > 0)
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i> Còn hàng
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-x-circle"></i> Hết hàng
+                                            </span>
+                                        }
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@* Anti-forgery token for AJAX requests *@
+@Html.AntiForgeryToken()
+
+@section Scripts {
+    <script src="~/js/product-detail.js" asp-append-version="true"></script>
+}
+
