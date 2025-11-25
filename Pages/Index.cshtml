@@ -74,84 +74,14 @@
 <section>
     <h2 class="section-title">✨ Sản phẩm nổi bật</h2>
     
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
+    <temp-alert keys="Error"></temp-alert>
     
     @if (vm.Products != null && vm.Products.Any())
     {
         <div class="product-grid">
             @foreach (var product in vm.Products)
             {
-                <div class="product-card-modern">
-                    <a href="/Products/Detail?id=@product.ProductId" class="product-link">
-                        <div class="product-image-container">
-                            @if (!string.IsNullOrEmpty(product.ImagePr))
-                            {
-                                <img src="@product.ImagePr" alt="@product.ProductName" loading="lazy" 
-                                     onerror="this.src='/images/no-image.svg';" />
-                            }
-                            else
-                            {
-                                <img src="/images/no-image.svg" alt="Không có ảnh" />
-                            }
-                            
-                            @if (product.IsFeatured == true)
-                            {
-                                <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-2">
-                                    <i class="bi bi-star-fill"></i> Nổi bật
-                                </span>
-                            }
-                            
-                            @if (product.Discount > 0)
-                            {
-                                <span class="badge bg-danger position-absolute top-0 end-0 m-2">
-                                    -@((int)(product.Discount ?? 0))%
-                                </span>
-                            }
-                        </div>
-                        
-                        <div class="product-info">
-                            <h3 class="product-title">@product.ProductName</h3>
-                            <p class="product-description">
-                                @if (!string.IsNullOrEmpty(product.Description))
-                                {
-                                    @(product.Description.Length > 80 ? product.Description.Substring(0, 80) + "..." : product.Description)
-                                }
-                            </p>
-                            
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="product-price">
-                                    @if (product.SellingPrice.HasValue)
-                                    {
-                                        <span>@product.SellingPrice.Value.ToString("N0") ₫</span>
-                                    }
-                                </div>
-                                
-                                @if (product.Quantity > 0 && product.Quantity <= 10)
-                                {
-                                    <small class="text-warning">
-                                        <i class="bi bi-exclamation-triangle"></i> Còn @product.Quantity
-                                    </small>
-                                }
-                                else if (product.Quantity > 10)
-                                {
-                                    <small class="text-success">
-                                        <i class="bi bi-check-circle"></i> Còn hàng
-                                    </small>
-                                }
-                            </div>
-                        </div>
-                    </a>
-                    <!-- Wishlist Button -->
-                    <button type="button" class="wishlist-btn" data-product-id="@product.ProductId" title="Thêm vào yêu thích">
-                        <i class="bi bi-heart"></i>
-                    </button>
-                </div>
+                <product-card product="product" show-actions="true"></product-card>
             }
         </div>
     }
