@@ -3,6 +3,18 @@ using System.Text;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using NewWeb.Models;
 
+/*Tag Helper dùng để thêm logic server-side vào thẻ HTML trong Razor View, giúp:
+
+Tạo URL đúng từ controller/action
+
+Bind input với Model
+
+Hiển thị validation
+
+Tạo form/link động
+
+Code Razor gọn, dễ đọc hơn*/
+
 namespace NewWeb.TagHelpers;
 
 [HtmlTargetElement("product-card", Attributes = "product")]
